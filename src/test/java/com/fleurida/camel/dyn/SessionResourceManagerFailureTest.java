@@ -1,7 +1,7 @@
 package com.fleurida.camel.dyn;
 
-import org.junit.Ignore;
 import org.junit.Test;
+import org.apache.camel.BeanInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.builder.RouteBuilder;
@@ -9,20 +9,17 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.test.blueprint.CamelBlueprintTestSupport;
 
-@Ignore
-public class TransactedRouteCascadeFailureTest extends
+import com.fleurida.camel.session.ReleaseResourceRQ;
+import com.fleurida.camel.session.SessionResourceManager;
+
+public class SessionResourceManagerFailureTest extends
 		CamelBlueprintTestSupport {
-
-	private static String UT_TRANSACTED_MASTER_ROUTE = "direct:unit-test-master-route";
-
-	private static String UT_TRANSACTED_NESTED_ROUTE = "direct:unit-test-nested-route";
-
-	private static String REQUEST_SUCCESS = "complete nicely";
-	private static String REQUEST_FAIL_MASTER = "fail master";
-	private static String REQUEST_FAIL_NESTED = "fail nested";
 
 	private boolean debugBeforeMethodCalled;
 	private boolean debugAfterMethodCalled;
+
+	@BeanInject
+	SessionResourceManager sm;
 
 	// override this method, and return the location of our Blueprint XML file
 	// to be used for testing ... note, if multiple files contain a
@@ -48,69 +45,12 @@ public class TransactedRouteCascadeFailureTest extends
 
 	}
 
-	@Override
-	protected RouteBuilder createRouteBuilder() throws Exception {
-
-		return new RouteBuilder() {
-
-			@Override
-			public void configure() throws Exception {
-
-				from(UT_TRANSACTED_MASTER_ROUTE)
-						.routeId(UT_TRANSACTED_MASTER_ROUTE)
-						// is transacted with the test tm
-						.transacted()
-						// actual route
-						.choice()
-						.when(body().isEqualTo(REQUEST_FAIL_MASTER))
-						.throwException(
-								new RuntimeException("Failed on "
-										+ UT_TRANSACTED_MASTER_ROUTE))
-						.otherwise()
-						// pass on to nesting level 1
-						.to(UT_TRANSACTED_NESTED_ROUTE).end()
-						// mock for verification
-						.to("mock:d").end();
-
-				from(UT_TRANSACTED_NESTED_ROUTE)
-						.routeId(UT_TRANSACTED_NESTED_ROUTE)
-						.transacted()
-						.choice()
-						.when(body().isEqualTo(REQUEST_FAIL_NESTED))
-						.throwException(
-								new RuntimeException("Failed on "
-										+ UT_TRANSACTED_NESTED_ROUTE))
-						.otherwise().end();
-
-			}
-
-		};
-
-	}
-
 	@Test
 	public void testTransactionRollback() throws Exception {
 
-		// set mock expectations
-		getMockEndpoint("mock:d").expectedMessageCount(1);
-
-		try {
-			// send a message
-			template.sendBody(UT_TRANSACTED_MASTER_ROUTE, REQUEST_FAIL_NESTED);
-
-		} catch (RuntimeException e) {
-			log.warn("test catch", e);
-		}
-
-		MockEndpoint mep = getMockEndpoint("mock:d");
-
-		// assert mocks
-		assertMockEndpointsSatisfied();
-
-		Exchange exch = mep.getExchanges().get(0);
-		String response = exch.getIn().getBody(String.class);
-
-		assertNotNull(response);
+		sm.release(new ReleaseResourceRQ().withVersion("1.0").withSayWhat(
+				"Fail"));
+		
 
 		// assert on the debugBefore/debugAfter methods below being called as
 		// we've enabled the debugger
