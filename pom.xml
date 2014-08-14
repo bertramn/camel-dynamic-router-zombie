@@ -81,6 +81,7 @@
 		<!-- test -->
 		<junit.version>4.11</junit.version>
 		<soapui.version>5.0.0</soapui.version>
+		<soapui.nonblocking>true</soapui.nonblocking>
 
 		<!-- OSGi configuration -->
 		<osgi.exports>
@@ -166,6 +167,10 @@
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-jaxb</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
@@ -826,15 +831,16 @@
 
 	<build>
 		<plugins>
-
 			<!-- endorsed -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 			</plugin>
-
-
-
+			<!-- soapui testing -->
+			<plugin>
+				<groupId>com.smartbear.soapui</groupId>
+				<artifactId>soapui-maven-plugin</artifactId>
+			</plugin>
 			<!-- generate wsdl bindings -->
 			<plugin>
 				<groupId>org.apache.cxf</groupId>
@@ -862,7 +868,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 			<!-- generate OSGi info -->
 			<plugin>
 				<groupId>org.apache.felix</groupId>
@@ -1083,11 +1088,28 @@
 						</systemProperties>
 					</configuration>
 				</plugin>
-				<!-- soapui testing -->
+				<!-- start mock service for integration tests -->
 				<plugin>
 					<groupId>com.smartbear.soapui</groupId>
 					<artifactId>soapui-maven-plugin</artifactId>
 					<version>${soapui.version}</version>
+					<configuration>
+						<projectFile>${project.basedir}/src/test/resources/SessionResourceMock-soapui-project.xml</projectFile>
+						<outputFolder>${project.build.directory}/surefire-reports</outputFolder>
+						<junitReport>true</junitReport>
+						<host>http://localhost:8088</host>
+						<mockService>SessionResourceMock</mockService>
+						<noBlock>${soapui.nonblocking}</noBlock>
+					</configuration>
+					<executions>
+						<execution>
+							<id>sabre-mock</id>
+							<phase>process-test-classes</phase>
+							<goals>
+								<goal>mock</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
@@ -1177,34 +1199,11 @@
 		<profile>
 			<id>blocking-mock</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<activeByDefault>false</activeByDefault>
 			</activation>
-			<build>
-				<plugins>
-					<!-- start mock service for integration tests -->
-					<plugin>
-						<groupId>com.smartbear.soapui</groupId>
-						<artifactId>soapui-maven-plugin</artifactId>
-						<configuration>
-							<projectFile>src/main/resources/SessionManager-soapui-project.xml</projectFile>
-							<outputFolder>${project.build.directory}/surefire-reports</outputFolder>
-							<junitReport>true</junitReport>
-							<host>http://127.0.0.1:8088</host>
-							<mockService>Sabre MockService</mockService>
-							<noBlock>false</noBlock>
-						</configuration>
-						<executions>
-							<execution>
-								<id>sabre-mock</id>
-								<phase>process-test-classes</phase>
-								<goals>
-									<goal>mock</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
+			<properties>
+				<soapui.nonblocking>false</soapui.nonblocking>
+			</properties>
 		</profile>
 		<profile>
 			<id>jdk-1.5</id>

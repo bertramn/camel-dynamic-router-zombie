@@ -16,7 +16,8 @@ public class SessionResourceRoute extends RouteBuilder {
 	@Override
 	public void configure() throws Exception {
 
-		from(DIRECT_START).bean(DynamicSourceRouter.build());
+		from(DIRECT_START).marshal().jaxb("com.fleurida.camel.session")
+				.bean(DynamicSourceRouter.build());
 
 		// TODO add content based routing and check that the adapter name is set
 	}

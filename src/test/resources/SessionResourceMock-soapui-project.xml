@@ -1,5 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<con:soapui-project activeEnvironment="Default" name="SessionResourceMock" resourceRoot="" soapui-version="5.0.0" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="SessionResourceBinding" type="wsdl" bindingName="{http://fleurida.com/camel/session}SessionResourceBinding" soapVersion="1_1" anonymous="optional" definition="file:/C:/Users/bertramn/dev/workspaces/oss/camel-dynamic-router-zombie/src/main/resources/wsdl/SessionResource.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/C:/Users/bertramn/dev/workspaces/oss/camel-dynamic-router-zombie/src/main/resources/wsdl/SessionResource.wsdl"><con:part><con:url>file:/C:/Users/bertramn/dev/workspaces/oss/camel-dynamic-router-zombie/src/main/resources/wsdl/SessionResource.wsdl</con:url><con:content><![CDATA[<wsdl:definitions name="SessionResource" targetNamespace="http://fleurida.com/camel/session" xmlns:s="http://fleurida.com/camel/session" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<con:soapui-project activeEnvironment="Default" name="SessionResourceMock" resourceRoot="" soapui-version="5.0.0" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.soapui.TestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+  <con:entry key="Environment" value="Default"/>
+  <con:entry key="Global Properties" value=""/>
+  <con:entry key="TestSuite" value="SessionResource TestSuite"/>
+  <con:entry key="Password" value=""/>
+  <con:entry key="TestRunner Path" value=""/>
+  <con:entry key="Tool Args" value=""/>
+  <con:entry key="Ignore Errors" value="false"/>
+  <con:entry key="Host:Port" value=""/>
+  <con:entry key="user-settings.xml Password" value=""/>
+  <con:entry key="WSS Password Type" value=""/>
+  <con:entry key="Save Project" value="false"/>
+  <con:entry key="Enable UI" value="false"/>
+  <con:entry key="System Properties" value=""/>
+  <con:entry key="Domain" value=""/>
+  <con:entry key="Coverage Report" value="false"/>
+  <con:entry key="Export JUnit Results" value="false"/>
+  <con:entry key="Open Report" value="false"/>
+  <con:entry key="Project Properties" value=""/>
+  <con:entry key="Export All" value="false"/>
+  <con:entry key="Project Password" value=""/>
+  <con:entry key="Report Format(s)" value=""/>
+  <con:entry key="TestCase" value="&lt;all>"/>
+  <con:entry key="Print Report" value="false"/>
+  <con:entry key="Username" value=""/>
+  <con:entry key="Root Folder" value=""/>
+  <con:entry key="Save After" value="false"/>
+  <con:entry key="Add Settings" value="false"/>
+  <con:entry key="Endpoint" value=""/>
+  <con:entry key="Select Report Type" value=""/>
+</xml-fragment>]]></con:setting></con:settings><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="SessionResourceBinding" type="wsdl" bindingName="{http://fleurida.com/camel/session}SessionResourceBinding" soapVersion="1_1" anonymous="optional" definition="file:/C:/Users/bertramn/dev/workspaces/oss/camel-dynamic-router-zombie/src/main/resources/wsdl/SessionResource.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/C:/Users/bertramn/dev/workspaces/oss/camel-dynamic-router-zombie/src/main/resources/wsdl/SessionResource.wsdl"><con:part><con:url>file:/C:/Users/bertramn/dev/workspaces/oss/camel-dynamic-router-zombie/src/main/resources/wsdl/SessionResource.wsdl</con:url><con:content><![CDATA[<wsdl:definitions name="SessionResource" targetNamespace="http://fleurida.com/camel/session" xmlns:s="http://fleurida.com/camel/session" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <wsdl:types>
     <xsd:schema targetNamespace="http://fleurida.com/camel/session" elementFormDefault="qualified" attributeFormDefault="unqualified">
       <xsd:element name="ReleaseResourceRQ">

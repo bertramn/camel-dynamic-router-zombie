@@ -8,8 +8,6 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.test.blueprint.CamelBlueprintTestSupport;
 
-import com.fleurida.camel.transaction.FailureBean;
-
 public class TransactedRouteCascadeFailureTest extends
 		CamelBlueprintTestSupport {
 
@@ -61,8 +59,11 @@ public class TransactedRouteCascadeFailureTest extends
 						// is transacted with the test tm
 						.transacted()
 						// actual route
-						.choice().when(body().isEqualTo(REQUEST_FAIL_MASTER))
-						.bean(new FailureBean(UT_TRANSACTED_MASTER_ROUTE))
+						.choice()
+						.when(body().isEqualTo(REQUEST_FAIL_MASTER))
+						.throwException(
+								new RuntimeException("Failed on "
+										+ UT_TRANSACTED_MASTER_ROUTE))
 						.otherwise()
 						// pass on to nesting level 1
 						.to(UT_TRANSACTED_NESTED_ROUTE).end()
@@ -70,9 +71,13 @@ public class TransactedRouteCascadeFailureTest extends
 						.to("mock:d").end();
 
 				from(UT_TRANSACTED_NESTED_ROUTE)
-						.routeId(UT_TRANSACTED_NESTED_ROUTE).transacted()
-						.choice().when(body().isEqualTo(REQUEST_FAIL_NESTED))
-						.bean(new FailureBean(UT_TRANSACTED_NESTED_ROUTE))
+						.routeId(UT_TRANSACTED_NESTED_ROUTE)
+						.transacted()
+						.choice()
+						.when(body().isEqualTo(REQUEST_FAIL_NESTED))
+						.throwException(
+								new RuntimeException("Failed on "
+										+ UT_TRANSACTED_NESTED_ROUTE))
 						.otherwise().end();
 
 			}
