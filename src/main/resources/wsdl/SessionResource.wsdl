@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions name="SessionResource" xmlns:s="http://fleurida.com/camel/session" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="http://fleurida.com/camel/session">
+
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://fleurida.com/camel/session" elementFormDefault="qualified" attributeFormDefault="unqualified">
+      <xsd:element name="ReleaseResourceRQ">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="SayWhat" type="xsd:string"/>
+          </xsd:sequence>
+          <xsd:attribute name="version" type="xsd:string" fixed="1.0"/>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="ReleaseResourceRS">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="JustSaying" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="Fault">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="Code" type="xsd:string"/>
+            <xsd:element name="Description" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+
+  <wsdl:message name="ReleaseResourceRQ">
+    <wsdl:part element="s:ReleaseResourceRQ" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ReleaseResourceRS">
+    <wsdl:part element="s:ReleaseResourceRS" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ReleaseFailedException">
+    <wsdl:part element="s:Fault" name="parameters"/>
+  </wsdl:message>
+
+  <wsdl:portType name="SessionResource">
+    <wsdl:operation name="Release">
+      <wsdl:input message="s:ReleaseResourceRQ"/>
+      <wsdl:output message="s:ReleaseResourceRS"/>
+      <wsdl:fault name="ReleaseFailedException" message="s:ReleaseFailedException"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:binding name="SessionResourceBinding" type="s:SessionResource">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Release">
+      <soap:operation soapAction="http://fleurida.com/camel/session/Release"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="ReleaseFailedException">
+        <soap:fault name="ReleaseFailedException"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:service name="SessionResourceService">
+    <wsdl:port name="SessionResourceSoapPort" binding="s:SessionResourceBinding">
+      <soap:address location="http://localhost:8088/mock/session"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>

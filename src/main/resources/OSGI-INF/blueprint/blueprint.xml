@@ -1,0 +1,100 @@
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+	xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
+	xmlns:cxf="http://cxf.apache.org/blueprint/core" xmlns:jaxws="http://cxf.apache.org/blueprint/jaxws"
+	xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs" xmlns:camel="http://camel.apache.org/schema/blueprint"
+	xmlns:camelcxf="http://camel.apache.org/schema/blueprint/cxf"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xmlns:camelsec="http://camel.apache.org/schema/spring-security"
+	xmlns:jaas="http://karaf.apache.org/xmlns/jaas/v1.0.0"
+	xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+	http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+	http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd	
+	http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0 http://aries.apache.org/schemas/blueprint-ext/blueprint-ext.xsd
+	http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
+	http://cxf.apache.org/blueprint/jaxws http://cxf.apache.org/schemas/blueprint/jaxws.xsd
+	http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
+	http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd
+	http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/blueprint/cxf/camel-cxf.xsd
+	http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+	http://camel.apache.org/schema/spring-security  http://camel.apache.org/schema/spring-security/camel-spring-security.xsd">
+
+
+	<!-- session manager provides access to the dynamic source routing -->
+	<bean id="SessionResourceManager-1.0" class="com.fleurida.camel.session.SessionResourceManager" />
+
+	<!-- assemble and publish the TM -->
+	<bean id="TransactionManager-1.0" class="com.fleurida.camel.transaction.TestTransactionManager">
+		<property name="sessionResource" ref="SessionResourceManager-1.0" />
+	</bean>
+
+	<!-- publish for the client configuration -->
+	<service id="transactionManager" ref="TransactionManager-1.0"
+		interface="com.fleurida.camel.transaction.TransactionManager"
+		activation="eager" />
+
+	<!-- obviously in a real life scenario we'd get the platformTransactionManager 
+		from OSGi as reference and setup the policy -->
+
+	<bean id="PROPAGATION_REQUIRED" class="org.apache.camel.spring.spi.SpringTransactionPolicy">
+		<property name="transactionManager" ref="TransactionManager-1.0" />
+		<property name="propagationBehaviorName" value="PROPAGATION_REQUIRED" />
+	</bean>
+
+
+	<!-- ######### Setup CXF endpoint ############ -->
+
+	<cxf:bus id="zombieBus" bus="zombieBus">
+		<cxf:features>
+			<cxf:logging id="zlog" limit="1024" />
+		</cxf:features>
+	</cxf:bus>
+
+	<!-- the service endpoint for the sabre create session -->
+	<camelcxf:cxfEndpoint id="sessionResourceSE" bus="zombieBus"
+		address="http://localhost:8088/mock/session" serviceClass="com.fleurida.camel.session.SessionResource">
+		<camelcxf:properties>
+			<entry key="dataFormat" value="PAYLOAD" />
+			<entry key="allowStreaming" value="true" />
+			<entry key="setDefaultBus" value="false" />
+			<entry key="faultStackTraceEnabled" value="true" />
+			<entry key="exceptionMessageCauseEnabled" value="true" />
+			<entry key="defaultOperationName" value="Release" />
+			<entry key="defaultOperationNamespace" value="http://fleurida.com/camel/session" />
+		</camelcxf:properties>
+	</camelcxf:cxfEndpoint>
+
+	<!-- ######### Setup Routing ############ -->
+
+	<!-- main session resource route and also the adapter one -->
+	<bean id="sessionResourceRoute" class="com.fleurida.camel.session.SessionResourceRoute" />
+	<bean id="oneSessionResourceRoute" class="com.fleurida.camel.session.OneSessionResourceRoute" />
+
+
+	<!-- ######### Setup Tracing ############ -->
+
+	<bean id="camelTracer" class="org.apache.camel.processor.interceptor.Tracer">
+		<property name="traceExceptions" value="true" />
+		<property name="traceInterceptors" value="true" />
+		<property name="traceOutExchanges" value="true" />
+		<property name="logLevel" value="ERROR" />
+		<property name="logName" value="com.fleurida.camel.management.Tracer" />
+	</bean>
+
+	<bean id="traceFormatter"
+		class="org.apache.camel.processor.interceptor.DefaultTraceFormatter">
+		<property name="showOutBody" value="true" />
+		<property name="showOutBodyType" value="true" />
+	</bean>
+
+	<camel:camelContext id="DynamicRouterZombie"
+		autoStartup="true" xmlns="http://camel.apache.org/schema/blueprint">
+
+		<camel:routeBuilder ref="sessionResourceRoute" />
+		<camel:routeBuilder ref="oneSessionResourceRoute" />
+
+
+	</camel:camelContext>
+
+</blueprint>

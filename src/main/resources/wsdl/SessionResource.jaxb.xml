@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxws:bindings xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:jaxws="http://java.sun.com/xml/ns/jaxws"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+	jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1">
+
+	<jaxws:bindings node="wsdl:definitions">
+		<jaxws:enableWrapperStyle>false</jaxws:enableWrapperStyle>
+		<jaxws:enableAsyncMapping>false</jaxws:enableAsyncMapping>
+	</jaxws:bindings>
+
+	<jaxws:bindings
+		node="wsdl:definitions/wsdl:portType[@name='SessionResource']">
+		<jaxws:class name="SessionResource" />
+	</jaxws:bindings>
+
+	<jaxws:bindings
+		node="wsdl:definitions/wsdl:service[@name='SessionResourceService']">
+		<jaxws:class name="SessionResourceService" />
+	</jaxws:bindings>
+
+	<jaxws:bindings
+		node="wsdl:definitions/wsdl:service[@name='SessionResourceService']/wsdl:port[@name='SessionResourceSoapPort']">
+		<jaxws:method name="getPort" />
+	</jaxws:bindings>
+
+</jaxws:bindings>
