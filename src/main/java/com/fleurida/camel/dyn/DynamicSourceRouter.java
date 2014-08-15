@@ -2,10 +2,12 @@ package com.fleurida.camel.dyn;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.apache.camel.CamelContext;
 import org.apache.camel.DynamicRouter;
 import org.apache.camel.Exchange;
 import org.apache.camel.Header;
-import org.apache.camel.language.XPath;
+import org.apache.camel.builder.xml.XPathBuilder;
 
 public class DynamicSourceRouter {
 
@@ -15,6 +17,13 @@ public class DynamicSourceRouter {
 	public static final String SOURCE_ADAPTER = "DynamicRouterSourceAdapter";
 
 	private String endpointPrefix = "direct-vm";
+
+	// create a builder to evaluate the xpath using saxon
+	XPathBuilder messageTypeXPath = XPathBuilder
+			.xpath("/child::node()[1]/local-name()").saxon().stringResult();
+
+	XPathBuilder versionXPath = XPathBuilder
+			.xpath("/child::node()[1]/@version").saxon().stringResult();
 
 	/**
 	 * A dynamic router that can be used to send a platform complient
@@ -36,11 +45,8 @@ public class DynamicSourceRouter {
 	 * @return the dynamically constructed endpoint to route to
 	 */
 	@DynamicRouter
-	public String route(
-			@Header(Exchange.SLIP_ENDPOINT) String previous,
+	public String route(@Header(Exchange.SLIP_ENDPOINT) String previous,
 			@Header(DynamicSourceRouter.SOURCE_ADAPTER) String sourceAdapter,
-			@XPath(value = "/child::node()/local-name()", resultType = String.class) String messageType,
-			@XPath(value = "/child::node()/@version", resultType = String.class) String messageVersion,
 			Exchange exchange) {
 
 		// return as soon as we have advanced in the slip
@@ -48,13 +54,24 @@ public class DynamicSourceRouter {
 			return null;
 		}
 
-		if (messageType == null) {
-			// throw configuration error
-			throw new IllegalArgumentException(
-					"cannot determine message type from routed message");
-
+		// need document to work on
+		Document doc = exchange.getIn().getBody(Document.class);
+		if (doc == null) {
+			return null;
 		}
 
+		CamelContext context = exchange.getContext();
+
+		// get the content type
+		String messageType = messageTypeXPath.evaluate(context, doc);
+		if (messageType == null) {
+			// TODO throw configuration error
+			throw new IllegalArgumentException(
+					"cannot determine message type from routed message");
+		}
+
+		// version if provided
+		String messageVersion = versionXPath.evaluate(context, doc);
 		if (messageVersion == null || "".equals(messageVersion.trim())) {
 			log.warn("No request version found on {}, defaulting to 1.0",
 					messageType);
@@ -71,6 +88,7 @@ public class DynamicSourceRouter {
 
 	}
 
+	// DSL convenient methods
 	public static DynamicSourceRouter build() {
 		DynamicSourceRouter router = new DynamicSourceRouter();
 		return router;

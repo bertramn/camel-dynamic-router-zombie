@@ -1,26 +1,24 @@
 package com.fleurida.camel.dyn;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
-import org.apache.camel.BeanInject;
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.NotifyBuilder;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.test.blueprint.CamelBlueprintTestSupport;
 
 import com.fleurida.camel.session.ReleaseResourceRQ;
-import com.fleurida.camel.session.SessionResourceManager;
+import com.fleurida.camel.session.ReleaseResourceRS;
+import com.fleurida.camel.session.SessionResourceRoute;
 
 public class SessionResourceManagerFailureTest extends
 		CamelBlueprintTestSupport {
 
 	private boolean debugBeforeMethodCalled;
 	private boolean debugAfterMethodCalled;
-
-	@BeanInject
-	SessionResourceManager sm;
 
 	// override this method, and return the location of our Blueprint XML file
 	// to be used for testing ... note, if multiple files contain a
@@ -50,10 +48,21 @@ public class SessionResourceManagerFailureTest extends
 	public void testTransactionRollback() throws Exception {
 
 		try {
-			sm.release(new ReleaseResourceRQ().withVersion("1.0").withSayWhat(
-					"Fail"));
 
-			assertTrue("Never exepct to get to here", false);
+			Map<String, Object> headers = new HashMap<String, Object>();
+			// for testing purporses only
+			// need to set this for the dynamic router to piece together the
+			// target
+			headers.put(DynamicSourceRouter.SOURCE_ADAPTER, "ADAPTER-ONE");
+
+			// put on the actual route
+			@SuppressWarnings("unused")
+			ReleaseResourceRS rs = template.requestBodyAndHeaders(
+					SessionResourceRoute.DIRECT_START, new ReleaseResourceRQ()
+							.withVersion("1.0").withSayWhat("Fail"), headers,
+					ReleaseResourceRS.class);
+
+			assertTrue("Never exepect to get to here", false);
 
 		} catch (CamelExecutionException ex) {
 
