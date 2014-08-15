@@ -2,6 +2,7 @@ package com.fleurida.camel.dyn;
 
 import org.junit.Test;
 import org.apache.camel.BeanInject;
+import org.apache.camel.CamelExecutionException;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.builder.RouteBuilder;
@@ -48,9 +49,21 @@ public class SessionResourceManagerFailureTest extends
 	@Test
 	public void testTransactionRollback() throws Exception {
 
-		sm.release(new ReleaseResourceRQ().withVersion("1.0").withSayWhat(
-				"Fail"));
-		
+		try {
+			sm.release(new ReleaseResourceRQ().withVersion("1.0").withSayWhat(
+					"Fail"));
+
+			assertTrue("Never exepct to get to here", false);
+
+		} catch (CamelExecutionException ex) {
+
+			log.info("Expected failure. Message was {}", ex.getCause()
+					.getMessage());
+
+		} catch (Throwable e) {
+			assertTrue("Never exepct to catch " + e.getClass().getName(), false);
+
+		}
 
 		// assert on the debugBefore/debugAfter methods below being called as
 		// we've enabled the debugger
